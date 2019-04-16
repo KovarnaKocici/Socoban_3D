@@ -13,5 +13,7 @@ UCLASS()
 class SOKOBAN_API ASokobanGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+	ASokobanGameModeBase(const FObjectInitializer& ObjectInitializer);
+	virtual void StartPlay() override;
 };
