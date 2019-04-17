@@ -19,7 +19,8 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 
 	// Our root component will be a sphere that reacts to physics
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
-	RootComponent =BoxComponent;
+	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	RootComponent = BoxComponent;
 
 	// Create and position a mesh component so we can see where our sphere is
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereVisualRepresentation"));
