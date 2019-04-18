@@ -1,12 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Grid.h"
-#include "Materials/Material.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/StaticMesh.h"
-#include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
-#include "Cell.h"
 
 // Sets default values
 AGrid::AGrid(const FObjectInitializer &ObjectInitializer)
@@ -18,7 +15,7 @@ AGrid::AGrid(const FObjectInitializer &ObjectInitializer)
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	SceneComponent = RootComponent;
 
-	DefaultMesh = CreateDefaultSubobject<UStaticMesh>(TEXT("MeshForCells"));
+	//DefaultMesh = CreateDefaultSubobject<UStaticMesh>(TEXT("MeshForCells"));
 }
 
 // Called when the game starts or when spawned
@@ -50,19 +47,28 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellCollision->RegisterComponent();
 				CellCollision->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 				CellCollision->SetBoxExtent(MeshBounds.GetExtent());
-				CellCollision->SetRelativeLocation(MeshBounds.GetCenter());
-				CellCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+				CellCollision->SetRelativeLocation(location);
+				//CellCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+				CellCollision->SetCollisionProfileName(TEXT("WorldStatic"));
+				CellCollision->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Block);
 				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
 				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
 
 				//Create Mesh
 				UStaticMeshComponent* CellMesh = NewObject<UStaticMeshComponent>(this);
-				CellMesh->SetupAttachment(RootComponent);
+				CellMesh->SetupAttachment(CellCollision);
 				CellMesh->RegisterComponent();
 				CellMesh->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 				CellMesh->SetStaticMesh(DefaultMesh);
 				CellMesh->SetMaterial(0, ChooseCellMaterial(i, j));
-				CellMesh->SetRelativeLocation(location);
+				FVector Box = CellCollision->Bounds.BoxExtent;
+				CellMesh->SetRelativeLocation(FVector(0, 0, -Box.Z));
+			
+
+				//CellMesh->SetWorldLocation(FVector(Origin.X, Origin.Y - Box.Y, Origin.Z - Box.Z));
+				CellMesh->SetCollisionProfileName(TEXT("OverlapAll"));
+				//CellMesh->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
+				//CellMesh->BodyInstance.SetResponseToChannel(ECC_WorldStatic, ECR_Overlap);
 			}
 		}
 	}
@@ -84,7 +90,7 @@ void AGrid::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
 		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("%s overlapped with: %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("%s overlapped with: %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
 	}
 }
 
@@ -93,6 +99,6 @@ void AGrid::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
 		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("%s not any more overlapped with: %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("%s not any more overlapped with: %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
 	}
 }

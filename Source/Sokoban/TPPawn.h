@@ -16,7 +16,7 @@ public:
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class USphereComponent* SphereComponent;
+	class USphereComponent* SphereCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	UStaticMeshComponent* MeshComponent;

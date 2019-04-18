@@ -18,13 +18,18 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Our root component will be a sphere that reacts to physics
-	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
-	SphereComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	RootComponent = SphereComponent;
+	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
+	SphereCollision->SetCollisionProfileName(TEXT("BlockAll")); //?
+	//SphereCollision->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	//SphereCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	RootComponent = SphereCollision;
 
 	// Create and position a mesh component so we can see where our sphere is
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereVisualRepresentation"));
 	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetCollisionProfileName(TEXT("OverlapAll"));
+	//MeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
+	//MeshComponent->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraMain"));
 	CameraComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 400.0f), FRotator(-90.0f, 0.0f, 0.0f));
@@ -86,8 +91,14 @@ void ATPPawn::MoveRight(float AxisValue)
 	}
 }
 
-
 void ATPPawn::OnConstruction(const FTransform & Transform) {
-
+	//Snap to grid cells
 	SnapComponent->Snap();
+
+	//Set Collision size according to the mesh
+	SphereCollision->SetSphereRadius(MeshComponent->Bounds.SphereRadius);
+
+	//Set mesh location according to collision
+	MeshComponent->SetRelativeLocation(FVector(0., 0., -MeshComponent->Bounds.Origin.Z/ 2.));
+
 }
