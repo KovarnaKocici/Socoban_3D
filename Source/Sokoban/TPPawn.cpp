@@ -2,11 +2,11 @@
 
 
 #include "TPPawn.h"
-#include "TPPawn.h"
-#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Classes/Camera/CameraComponent.h"
 #include "TPPlayerMovementComponent.h"
+#include "SnapToGridComponent.h"
 #include "Components/InputComponent.h"
 
 
@@ -18,16 +18,16 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Our root component will be a sphere that reacts to physics
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
-	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	RootComponent = BoxComponent;
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
+	SphereComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	RootComponent = SphereComponent;
 
 	// Create and position a mesh component so we can see where our sphere is
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereVisualRepresentation"));
 	MeshComponent->SetupAttachment(RootComponent);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraMain"));
-	CameraComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 300.0f), FRotator(-90.0f, 0.0f, 0.0f));
+	CameraComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 400.0f), FRotator(-90.0f, 0.0f, 0.0f));
 	CameraComponent->SetupAttachment(RootComponent);
 
 	// Create an instance of our movement component, and tell it to update the root.
@@ -37,6 +37,8 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	// Take control of the default player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
+	//Create Snap Component
+	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -82,4 +84,10 @@ void ATPPawn::MoveRight(float AxisValue)
 	{
 		MovementComponent->AddInputVector(GetActorRightVector() * AxisValue);
 	}
+}
+
+
+void ATPPawn::OnConstruction(const FTransform & Transform) {
+
+	SnapComponent->Snap();
 }

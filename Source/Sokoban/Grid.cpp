@@ -44,6 +44,17 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 			{
 				FVector location = FVector(j*MeshBounds.Max.X * 2, i*MeshBounds.Max.Y * 2, 0);
 
+				//Create Collision Subobject
+				UBoxComponent* CellCollision = NewObject<UBoxComponent>(this);
+				CellCollision->SetupAttachment(RootComponent);
+				CellCollision->RegisterComponent();
+				CellCollision->CreationMethod = EComponentCreationMethod::UserConstructionScript;
+				CellCollision->SetBoxExtent(MeshBounds.GetExtent());
+				CellCollision->SetRelativeLocation(MeshBounds.GetCenter());
+				CellCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
+				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
+
 				//Create Mesh
 				UStaticMeshComponent* CellMesh = NewObject<UStaticMeshComponent>(this);
 				CellMesh->SetupAttachment(RootComponent);
@@ -52,17 +63,6 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellMesh->SetStaticMesh(DefaultMesh);
 				CellMesh->SetMaterial(0, ChooseCellMaterial(i, j));
 				CellMesh->SetRelativeLocation(location);
-
-				//Create Collision Subobject
-				UBoxComponent* CellCollisionComponent = NewObject<UBoxComponent>(this);
-				CellCollisionComponent->SetupAttachment(CellMesh);
-				CellCollisionComponent->RegisterComponent();
-				CellCollisionComponent->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-				CellCollisionComponent->SetBoxExtent(MeshBounds.GetExtent());
-				CellCollisionComponent->SetRelativeLocation(MeshBounds.GetCenter());
-				CellCollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-				CellCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
-				CellCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
 			}
 		}
 	}

@@ -16,7 +16,7 @@ public:
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class UBoxComponent* BoxComponent;
+	class USphereComponent* SphereComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	UStaticMeshComponent* MeshComponent;
@@ -28,6 +28,10 @@ public:
 	//Movement Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	class UTPPlayerMovementComponent* MovementComponent;
+
+	//Snap Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
+	class USnapToGridComponent* SnapComponent;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,7 +45,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
+
 	void MoveForward(float AxisValue);
+
 	void MoveRight(float AxisValue);
+
+	//ConstructionScript
+	virtual void OnConstruction(const FTransform & Transform) override;
 
 };
