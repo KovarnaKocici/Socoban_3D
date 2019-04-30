@@ -15,11 +15,15 @@ public:
 	// Sets default values for this pawn's properties
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class USphereComponent* SphereCollision;
+	class UBoxComponent* BoxComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	UStaticMeshComponent* MeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
+		UStaticMesh* DefaultMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
+		UMaterialInterface* DefaultMaterial;
 
 	//CameraComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
@@ -52,5 +56,8 @@ public:
 
 	//ConstructionScript
 	virtual void OnConstruction(const FTransform & Transform) override;
+
+	UFUNCTION(BlueprintCallable)
+		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 };

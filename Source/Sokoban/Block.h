@@ -10,30 +10,37 @@ UCLASS()
 class SOKOBAN_API ABlock : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ABlock(const FObjectInitializer &ObjectInitializer);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class UBoxComponent* BoxCollision;
+	class UBoxComponent* BoxComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	UStaticMeshComponent* MeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
+		UStaticMesh* DefaultMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
+		UMaterialInterface* DefaultMaterial;
 
 	//Snap Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class USnapToGridComponent* SnapComponent;
+		class USnapToGridComponent* SnapComponent;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	//ConstructionScript
 	virtual void OnConstruction(const FTransform & Transform) override;
+
+	UFUNCTION(BlueprintCallable)
+		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 };

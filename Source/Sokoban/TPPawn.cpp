@@ -2,8 +2,11 @@
 
 
 #include "TPPawn.h"
-#include "Components/SphereComponent.h"
-#include "Components/StaticMeshComponent.h"
+#include "Sokoban.h"
+#include "Components/BoxComponent.h"
+#include "Components/SceneComponent.h"
+#include "Materials/MaterialInterface.h"
+#include "Engine/StaticMesh.h"
 #include "Classes/Camera/CameraComponent.h"
 #include "TPPlayerMovementComponent.h"
 #include "SnapToGridComponent.h"
@@ -17,26 +20,24 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Our root component will be a sphere that reacts to physics
-	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
-	SphereCollision->SetCollisionProfileName(TEXT("BlockAll")); //?
-	//SphereCollision->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	//SphereCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	RootComponent = SphereCollision;
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	BoxComponent->OnComponentHit.AddDynamic(this, &ATPPawn::OnCompHit);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComponent->SetCollisionObjectType(ECC_Pawn);
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
 
-	// Create and position a mesh component so we can see where our sphere is
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereVisualRepresentation"));
+	//Sphere Collision as Root
+	RootComponent = BoxComponent;
+
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionProfileName(TEXT("OverlapAll"));
-	//MeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
-	//MeshComponent->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraMain"));
 	CameraComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 400.0f), FRotator(-90.0f, 0.0f, 0.0f));
 	CameraComponent->SetupAttachment(RootComponent);
 
 	// Create an instance of our movement component, and tell it to update the root.
-	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("CustomMovementComponent"));
+	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
 	// Take control of the default player
@@ -44,6 +45,8 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 
 	//Create Snap Component
 	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
+
+	SetActorEnableCollision(true);
 }
 
 // Called when the game starts or when spawned
@@ -92,13 +95,26 @@ void ATPPawn::MoveRight(float AxisValue)
 }
 
 void ATPPawn::OnConstruction(const FTransform & Transform) {
+	if (DefaultMesh) {
+		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
+
+		BoxComponent->SetBoxExtent(MeshBounds);
+
+		MeshComponent->SetStaticMesh(DefaultMesh);
+		MeshComponent->SetMaterial(0, DefaultMaterial);
+		MeshComponent->SetRelativeLocation(FVector(0, 0, -MeshBounds.Z));
+	}
+
 	//Snap to grid cells
 	SnapComponent->Snap();
+}
 
-	//Set Collision size according to the mesh
-	SphereCollision->SetSphereRadius(MeshComponent->Bounds.SphereRadius);
-
-	//Set mesh location according to collision
-	MeshComponent->SetRelativeLocation(FVector(0., 0., -MeshComponent->Bounds.Origin.Z/ 2.));
-
+void ATPPawn::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
+	{
+		UE_LOG(LogCollide, Log, TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName());
+		//if (GEngine)
+			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName()));
+	}
 }

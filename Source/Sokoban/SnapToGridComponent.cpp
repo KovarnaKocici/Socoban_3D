@@ -2,8 +2,9 @@
 
 
 #include "SnapToGridComponent.h"
-#include "Engine/World.h"
+#include "Sokoban.h"
 #include "Grid.h"
+#include "Engine/World.h"
 
 // Sets default values for this component's properties
 USnapToGridComponent::USnapToGridComponent()
@@ -50,9 +51,8 @@ void USnapToGridComponent::Snap()
 	{
 		//Print out the name of the traced actor
 		if (OutHit.GetActor())
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Hit actor is : %s . Trace Distance is : %f ."), *(OutHit.GetComponent())->GetName(), OutHit.Distance));
-
+			UE_LOG(LogSnapping, Log, TEXT("Hit actor is : %s . Trace Distance is : %f ."), *(OutHit.GetComponent())->GetName(), OutHit.Distance);
+			
 		//Snap to floor
 		if (OutHit.Distance > 0) {
 			FVector OwnerOrigin;
@@ -64,8 +64,8 @@ void USnapToGridComponent::Snap()
 
 		//Snap to center of component that was hit
 		FVector UpdatedCurrLocation = GetOwner()->GetActorLocation();
-		FVector HitComponentOrogin = OutHit.GetComponent()->Bounds.Origin;
-		FVector NewLocationXY = FVector(HitComponentOrogin.X, HitComponentOrogin.Y, UpdatedCurrLocation.Z);
+		FVector HitComponentOrigin = OutHit.GetComponent()->Bounds.Origin;
+		FVector NewLocationXY = FVector(HitComponentOrigin.X, HitComponentOrigin.Y, UpdatedCurrLocation.Z);
 		GetOwner()->SetActorLocation(NewLocationXY, false);
 	}
 }

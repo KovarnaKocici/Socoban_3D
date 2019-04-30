@@ -2,8 +2,10 @@
 
 
 #include "Block.h"
+#include "Sokoban.h"
 #include "Components/BoxComponent.h"
-#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
+#include "Engine/StaticMesh.h"
 #include "SnapToGridComponent.h"
 
 // Sets default values
@@ -13,21 +15,21 @@ ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Our root component will be a sphere that reacts to physics
-	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
-	BoxCollision->SetCollisionProfileName(TEXT("BlockAll"));
-	//BoxCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	BoxCollision->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Block);
-	RootComponent = BoxCollision;
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	BoxComponent->OnComponentHit.AddDynamic(this, &ABlock::OnCompHit);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComponent->SetCollisionObjectType(ECC_WorldStatic);
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
 
-	// Create and position a mesh component so we can see where our sphere is
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereVisualRepresentation"));
+	//Box Collision as Root
+	RootComponent = BoxComponent;
+
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionProfileName(TEXT("OverlapAll"));
-	//MeshComponent->BodyInstance.SetResponseToChannel(ECC_WorldStatic, ECR_Overlap);
 
 	//Create Snap Component
 	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
+
 }
 
 // Called when the game starts or when spawned
@@ -45,13 +47,25 @@ void ABlock::Tick(float DeltaTime)
 }
 
 void ABlock::OnConstruction(const FTransform & Transform) {
-	//Set Collision size according to the mesh
-	BoxCollision->SetBoxExtent(MeshComponent->Bounds.BoxExtent);
+	if (DefaultMesh) {
+		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
 
-	//Set mesh location according to collision
-	FVector Box = MeshComponent->Bounds.BoxExtent;
-	MeshComponent->SetRelativeLocation(FVector(0, 0, -Box.Z));
+		BoxComponent->SetBoxExtent(MeshBounds);
 
-	//Snap to grid cells
+		MeshComponent->SetStaticMesh(DefaultMesh);
+		MeshComponent->SetMaterial(0, DefaultMaterial);
+		MeshComponent->SetRelativeLocation(FVector(0, 0, -MeshBounds.Z));
+	}
+
 	SnapComponent->Snap();
+}
+
+void ABlock::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
+	{
+		UE_LOG(LogCollide, Log, TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName());
+		//if (GEngine)
+			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName()));
+	}
 }

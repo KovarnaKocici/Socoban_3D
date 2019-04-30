@@ -19,15 +19,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Initialize)
 		USceneComponent* SceneComponent;
 
-	//MeshComponent
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Initialize)
-		UStaticMesh* DefaultMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Initialize)
 		int Rows;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Initialize)
 		int Columns;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Initialize)
+		UStaticMesh* DefaultMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Initialize)
 		UMaterialInterface* Material1;
@@ -47,11 +46,11 @@ public:
 	virtual void OnConstruction(const FTransform & Transform) override;
 
 	UFUNCTION()
-	UMaterialInterface* ChooseCellMaterial(int row, int column);
+	UMaterialInterface* SwitchCellMaterial(int row, int column);
 
 	UFUNCTION(BlueprintCallable)
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION(BlueprintCallable)
-		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+		void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };
