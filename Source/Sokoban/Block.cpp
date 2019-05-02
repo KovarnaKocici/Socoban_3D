@@ -15,17 +15,20 @@ ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	BoxComponent->OnComponentHit.AddDynamic(this, &ABlock::OnCompHit);
-	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	BoxComponent->SetCollisionObjectType(ECC_WorldStatic);
-	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
-
-	//Box Collision as Root
-	RootComponent = BoxComponent;
-
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->OnComponentHit.AddDynamic(this, &ABlock::OnCompHit);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComponent->SetCollisionObjectType(ECC_WorldStatic);
+	MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+
+	//Mesh as Root
+	RootComponent = MeshComponent;
+
+	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
+	CollisionComponent->SetupAttachment(RootComponent);
 
 	//Create Snap Component
 	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
@@ -48,13 +51,15 @@ void ABlock::Tick(float DeltaTime)
 
 void ABlock::OnConstruction(const FTransform & Transform) {
 	if (DefaultMesh) {
+		int collisionH = 1;
 		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
-
-		BoxComponent->SetBoxExtent(MeshBounds);
 
 		MeshComponent->SetStaticMesh(DefaultMesh);
 		MeshComponent->SetMaterial(0, DefaultMaterial);
-		MeshComponent->SetRelativeLocation(FVector(0, 0, -MeshBounds.Z));
+
+		CollisionComponent->SetBoxExtent(FVector(MeshBounds.X, MeshBounds.Y, collisionH));
+		CollisionComponent->SetRelativeLocation(FVector(0, 0, MeshBounds.Z * 2 - collisionH));
+
 	}
 
 	SnapComponent->Snap();
@@ -65,7 +70,5 @@ void ABlock::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
 		UE_LOG(LogCollide, Log, TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName());
-		//if (GEngine)
-			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName()));
 	}
 }

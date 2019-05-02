@@ -20,17 +20,15 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	BoxComponent->OnComponentHit.AddDynamic(this, &ATPPawn::OnCompHit);
-	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	BoxComponent->SetCollisionObjectType(ECC_Pawn);
-	BoxComponent->SetCollisionResponseToAllChannels(ECR_Block);
-
-	//Sphere Collision as Root
-	RootComponent = BoxComponent;
-
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->OnComponentHit.AddDynamic(this, &ATPPawn::OnCompHit);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComponent->SetCollisionObjectType(ECC_Pawn);
+	MeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	MeshComponent->SetGenerateOverlapEvents(true);
+
+	//Mesh as Root
+	RootComponent = MeshComponent;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraMain"));
 	CameraComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 400.0f), FRotator(-90.0f, 0.0f, 0.0f));
@@ -96,13 +94,8 @@ void ATPPawn::MoveRight(float AxisValue)
 
 void ATPPawn::OnConstruction(const FTransform & Transform) {
 	if (DefaultMesh) {
-		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
-
-		BoxComponent->SetBoxExtent(MeshBounds);
-
 		MeshComponent->SetStaticMesh(DefaultMesh);
 		MeshComponent->SetMaterial(0, DefaultMaterial);
-		MeshComponent->SetRelativeLocation(FVector(0, 0, -MeshBounds.Z));
 	}
 
 	//Snap to grid cells

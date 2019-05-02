@@ -15,7 +15,7 @@ public:
 	// Sets default values for this pawn's properties
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
-	class UBoxComponent* BoxComponent;
+	//class UBoxComponent* BoxComponent;
 
 	UStaticMeshComponent* MeshComponent;
 

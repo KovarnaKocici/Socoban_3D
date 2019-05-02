@@ -43,19 +43,30 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 
 				//Create Mesh
 				UStaticMeshComponent* CellMesh = NewObject<UStaticMeshComponent>(this);
-				CellMesh->SetupAttachment(RootComponent);
+				CellMesh->SetupAttachment(RootComponent);NewObject<UBoxComponent>(this);
 				CellMesh->RegisterComponent();
 				CellMesh->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 				CellMesh->SetStaticMesh(DefaultMesh);
 				CellMesh->SetMaterial(0, SwitchCellMaterial(i, j));
 				CellMesh->SetRelativeLocation(CellLocation);
-				CellMesh->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
-				CellMesh->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
 				CellMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 				CellMesh->SetCollisionObjectType(ECC_WorldStatic);
 				CellMesh->SetCollisionResponseToAllChannels(ECR_Block);
-				CellMesh->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Overlap);
 				
+				int collisionH = 1;
+
+				UBoxComponent* CellCollision = NewObject<UBoxComponent>(this);
+				CellCollision->SetupAttachment(CellMesh);
+				CellCollision->RegisterComponent();
+				CellCollision->CreationMethod = EComponentCreationMethod::UserConstructionScript;
+				CellCollision->SetBoxExtent(FVector(MeshBounds.GetExtent().X, MeshBounds.GetExtent().Y, collisionH));
+				CellCollision->SetRelativeLocation(FVector(0, 0, MeshBounds.GetExtent().Z * 2 - collisionH));
+				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
+				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
+				CellCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				CellCollision->SetCollisionObjectType(ECC_WorldDynamic);
+				CellCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
+				CellCollision->SetGenerateOverlapEvents(true);
 			}
 		}
 	}
@@ -76,9 +87,7 @@ void AGrid::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s"), *OverlappedComp->GetName(), *OtherActor->GetName());
-		//if (GEngine)
-			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("%s overlapped with %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
+		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
 	}
 }
 
@@ -86,8 +95,6 @@ void AGrid::OnOverlapEnd(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		UE_LOG(LogCollide, Log, TEXT("%s not any more overlapped with %s"), *OverlappedComp->GetName(), *OtherActor->GetName());
-		//if (GEngine)
-			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("%s not any more overlapped with %s"), *OverlappedComp->GetName(), *OtherActor->GetName()));
+		UE_LOG(LogCollide, Log, TEXT("%s not any more overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
 	}
 }

@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	ABlock(const FObjectInitializer &ObjectInitializer);
 
-	class UBoxComponent* BoxComponent;
+	class UBoxComponent* CollisionComponent;
 
 	UStaticMeshComponent* MeshComponent;
 
