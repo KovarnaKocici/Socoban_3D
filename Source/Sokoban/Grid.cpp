@@ -64,8 +64,8 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
 				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
 				CellCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				CellCollision->SetCollisionObjectType(ECC_WorldDynamic);
-				CellCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
+				CellCollision->SetCollisionObjectType(ECC_WorldStatic);
+				CellCollision->SetCollisionResponseToAllChannels(ECR_Block);
 				CellCollision->SetGenerateOverlapEvents(true);
 			}
 		}

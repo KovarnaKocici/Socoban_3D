@@ -15,8 +15,10 @@ public:
 	// Sets default values for this actor's properties
 	ABlock(const FObjectInitializer &ObjectInitializer);
 
+	UPROPERTY(BlueprintReadOnly)
 	class UBoxComponent* CollisionComponent;
 
+	UPROPERTY(BlueprintReadOnly)
 	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)

@@ -6,6 +6,7 @@
 #include "Grid.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "UObject/ObjectMacros.h"
 
 // Sets default values for this component's properties
 USnapToGridComponent::USnapToGridComponent()
@@ -37,61 +38,57 @@ void USnapToGridComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 void USnapToGridComponent::Snap()
 {
-	SnapToCellCenter(1000);
-	//TopDown
-	if (!SnapToFloor(1000, -1)) {
-		//DownTop
-		SnapToFloor(1000, 1);
-	}
+
+	if(!SnapToCellCenter(1000, ETraceDirection::TopDown))
+	SnapToCellCenter(1000, ETraceDirection::DownTop);
+
+	SnapToFloor(1000, ETraceDirection::TopDown);
+		SnapToFloor(1000, ETraceDirection::DownTop);
 }
 
-float USnapToGridComponent::CalcDistanceToObject(ECollisionChannel Type, FVector Start, FVector  End, int index) { // index == 0 first, index == 1 last
+FVector USnapToGridComponent::NewLocationRelativeToObject(ECollisionChannel Type, FVector Start, FVector  End, int direction) {
 	TArray<FHitResult> OutHit;
 	TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjects;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(GetOwner());
+	FVector OwnerBounds = GetOwner()->GetComponentsBoundingBox().GetExtent();
 
-	if (GetWorld()->LineTraceMultiByObjectType(OutHit, Start, End, Type, CollisionParams))
+	if (GetWorld()->SweepMultiByObjectType(OutHit, Start, End, GetOwner()->GetActorRotation().Quaternion(), Type, FCollisionShape::MakeBox(OwnerBounds), CollisionParams))
 	{
 		FHitResult Hit;
-		float dist;
-		if (index == 0) {
+
+		if (direction == ETraceDirection::TopDown)
 			Hit = OutHit[0];
-			dist = Hit.Distance;
-		}
 		else
-		{
 			Hit = OutHit[OutHit.Num()-1];
-			dist = Hit.Distance;
-		}
-		DrawDebugLine(GetWorld(),Hit.TraceStart, Hit.Location, index == 0 ? FColor::Red : FColor::Blue,false, 5.0f, 0, 7.0f);
-		UE_LOG(LogSnapping, Log, TEXT("Hit actor is : %s. Trace distance is : %f. Direction is : %d."), *(Hit.GetActor())->GetName(), dist, index);
-		return dist;
+
+		UE_LOG(LogSnapping, Log, TEXT("Hit actor is : %s. Trace distance is : %f. Direction is : %d."), *(Hit.GetActor())->GetName(), Hit.Distance , direction);
+		DrawDebugBox(GetWorld(), Hit.Location, OwnerBounds, direction == ETraceDirection::TopDown ? FColor::Red : FColor::Blue, false, 3.0f, 0, 3.0f);
+		if(direction == ETraceDirection::TopDown) return Hit.Location - FVector(0, 0, OwnerBounds.Z*2);
+		else return Hit.Location + FVector(0, 0, OwnerBounds.Z);
 	}
-	return 0;
+	return Start;
 }
 
 bool USnapToGridComponent::SnapToFloor(float traceLength, int direction)
 {
 	FVector trace = FVector(0, 0, traceLength * direction);
 	FVector CurrLocation = GetOwner()->GetActorLocation();
-	double distance = CalcDistanceToObject(ECC_WorldDynamic, CurrLocation, CurrLocation + trace, direction>0?1:0);
-	//Snap to floor
-	if (distance != 0) {
-		if (direction > 0) distance = -distance;
-		FVector NewLocationZ = FVector(CurrLocation.X, CurrLocation.Y, CurrLocation.Z - distance);
+	FVector NewLocationZ = NewLocationRelativeToObject(ECC_WorldStatic, CurrLocation, CurrLocation + trace, direction);
+	if (CurrLocation != NewLocationZ)
+	{
 		GetOwner()->SetActorLocation(NewLocationZ, false);
 		return true;
 	}
 	return false;
 }
 
-bool USnapToGridComponent::SnapToCellCenter(float traceLength)
+bool USnapToGridComponent::SnapToCellCenter(float traceLength, int direction)
 {
-	FVector trace = FVector(0, 0, -traceLength);
+	FVector trace = FVector(0, 0, traceLength*direction);
 	FVector Start = GetOwner()->GetActorLocation();
 
-	FHitResult OutHit;
+	TArray<FHitResult> OutHit;
 	FVector End;
 	TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjects;
 	FCollisionQueryParams CollisionParams;
@@ -99,17 +96,27 @@ bool USnapToGridComponent::SnapToCellCenter(float traceLength)
 
 	End = Start + trace;
 
-	if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECollisionChannel::ECC_WorldStatic, CollisionParams))
+	if (GetWorld()->LineTraceMultiByChannel(OutHit, Start, End, ECollisionChannel::ECC_WorldStatic, CollisionParams))
 	{
-		//Print out the name of the traced actor
-		UE_LOG(LogSnapping, Log, TEXT("Hit component is : %s."), *(OutHit.GetComponent())->GetName());
+		FHitResult Hit;
 
-		//Snap to center of component that was hit
+		for (int i = 0; i < OutHit.Num(); i++)
+		{
+			if (OutHit[i].GetActor()->IsA(AGrid::StaticClass()))
+				Hit = OutHit[i];
+			break;
+		}
+		if (Hit.GetActor()==NULL) return false;
+
+		UE_LOG(LogSnapping, Log, TEXT("Hit component is : %s."), *(Hit.GetComponent())->GetName());
+		DrawDebugLine(GetWorld(), Hit.TraceStart, Hit.Location, direction == ETraceDirection::TopDown ? FColor::Red : FColor::Blue, false, 3.0f, 0, 3.0f);
+
 		FVector UpdatedCurrLocation = GetOwner()->GetActorLocation();
-		FVector HitComponentOrigin = OutHit.GetComponent()->Bounds.Origin;
+		FVector HitComponentOrigin = Hit.GetComponent()->Bounds.Origin;
 		FVector NewLocationXY = FVector(HitComponentOrigin.X, HitComponentOrigin.Y, UpdatedCurrLocation.Z);
 		GetOwner()->SetActorLocation(NewLocationXY, false);
+		return true;
 	}
-	return true;
+	return false;
 }
 

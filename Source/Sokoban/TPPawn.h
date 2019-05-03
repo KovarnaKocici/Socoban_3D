@@ -15,8 +15,7 @@ public:
 	// Sets default values for this pawn's properties
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
-	//class UBoxComponent* BoxComponent;
-
+	UPROPERTY(BlueprintReadOnly)
 	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)

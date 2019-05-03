@@ -26,8 +26,8 @@ ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
+	CollisionComponent->SetCollisionObjectType(ECC_WorldStatic);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Block);
 	CollisionComponent->SetupAttachment(RootComponent);
 
 	//Create Snap Component

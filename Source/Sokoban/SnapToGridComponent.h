@@ -15,6 +15,13 @@ public:
 	// Sets default values for this component's properties
 	USnapToGridComponent();
 
+	enum ETraceDirection 
+	{
+		TopDown = -1 UMETA(DisplayName = "TopDown"),
+		DownTop = 1 UMETA(DisplayName = "DownTop ")
+	};
+
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -23,6 +30,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
+	//TEnumAsByte<ETraceDirection> direction;
+
 	UFUNCTION(BlueprintCallable)
 		void Snap();
 
@@ -30,10 +40,10 @@ public:
 		bool SnapToFloor(float traceLength, int direction);
 
 	UFUNCTION(BlueprintCallable)
-		bool SnapToCellCenter(float traceLength);
+		bool SnapToCellCenter(float traceLength, int direction);
 
 	UFUNCTION(BlueprintCallable)
-		float CalcDistanceToObject(ECollisionChannel Type, FVector Start, FVector  End, int index);
+		FVector NewLocationRelativeToObject(ECollisionChannel Type, FVector Start, FVector  End, int index);
 };
 
 
