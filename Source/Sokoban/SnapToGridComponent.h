@@ -30,20 +30,23 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Status)
-	//TEnumAsByte<ETraceDirection> direction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float traceLength = 1000;
 
 	UFUNCTION(BlueprintCallable)
-		void Snap();
+		UPrimitiveComponent* GetCurrCell();
 
 	UFUNCTION(BlueprintCallable)
-		bool SnapToFloor(float traceLength, int direction);
+		bool SnapToCell(UPrimitiveComponent* cell);
 
 	UFUNCTION(BlueprintCallable)
-		bool SnapToCellCenter(float traceLength, int direction);
+		bool SnapToFloor(int direction);
 
 	UFUNCTION(BlueprintCallable)
-		FVector NewLocationRelativeToObject(ECollisionChannel Type, FVector Start, FVector  End, int index);
+		bool NewLocationXYRelToGrid(UPrimitiveComponent* cell, FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+		bool NewLocationZRelToActors(FVector Start, FVector  End, int direction, FVector& location);
 };
 
 

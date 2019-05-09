@@ -49,10 +49,8 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellMesh->SetStaticMesh(DefaultMesh);
 				CellMesh->SetMaterial(0, SwitchCellMaterial(i, j));
 				CellMesh->SetRelativeLocation(CellLocation);
-				CellMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				CellMesh->SetCollisionObjectType(ECC_WorldStatic);
-				CellMesh->SetCollisionResponseToAllChannels(ECR_Block);
-				
+				CellMesh->SetCollisionProfileName(TEXT("Grid"));
+
 				int collisionH = 1;
 
 				UBoxComponent* CellCollision = NewObject<UBoxComponent>(this);
@@ -63,9 +61,7 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellCollision->SetRelativeLocation(FVector(0, 0, MeshBounds.GetExtent().Z * 2 - collisionH));
 				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
 				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
-				CellCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				CellCollision->SetCollisionObjectType(ECC_WorldStatic);
-				CellCollision->SetCollisionResponseToAllChannels(ECR_Block);
+				CellCollision->SetCollisionProfileName(TEXT("Snap"));
 				CellCollision->SetGenerateOverlapEvents(true);
 			}
 		}

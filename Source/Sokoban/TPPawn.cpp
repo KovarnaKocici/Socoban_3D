@@ -99,7 +99,7 @@ void ATPPawn::OnConstruction(const FTransform & Transform) {
 	}
 
 	//Snap to grid cells
-	SnapComponent->Snap();
+	//SnapComponent->Snap();
 }
 
 void ATPPawn::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
