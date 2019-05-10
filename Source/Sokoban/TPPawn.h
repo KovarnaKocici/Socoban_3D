@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "GridPossession.h"
 #include "TPPawn.generated.h"
 
 UCLASS()
-class SOKOBAN_API ATPPawn : public APawn
+class SOKOBAN_API ATPPawn : public AGridPossession
 {
 	GENERATED_BODY()
 
@@ -15,26 +16,14 @@ public:
 	// Sets default values for this pawn's properties
 	ATPPawn(const FObjectInitializer &ObjectInitializer);
 
-	UPROPERTY(BlueprintReadOnly)
-	UStaticMeshComponent* MeshComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
+	class USpringArmComponent* SpringArmComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
-		UStaticMesh* DefaultMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = View)
-		UMaterialInterface* DefaultMaterial;
-
-	//CameraComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	class UCameraComponent* CameraComponent;
 
-	//Movement Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	class UTPPlayerMovementComponent* MovementComponent;
-
-	//Snap Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class USnapToGridComponent* SnapComponent;
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,6 +38,14 @@ public:
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
+	//Camera 
+	void MouseYaw(float axis);
+
+	void MousePitch(float axis);
+
+	FVector2D MouseInput;
+
+	//Movements
 	void MoveForward(float AxisValue);
 
 	void MoveRight(float AxisValue);

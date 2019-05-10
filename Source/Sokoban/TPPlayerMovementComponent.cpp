@@ -2,6 +2,8 @@
 
 
 #include "TPPlayerMovementComponent.h"
+#include "TPPawn.h"
+#include "Engine/World.h"
 
 void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
@@ -13,17 +15,39 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 		return;
 	}
 
-	// Get (and then clear) the movement vector that we set in ATPPawn::Tick
-	FVector DesiredMovementThisFrame = ConsumeInputVector().GetClampedToMaxSize(1.0f) * DeltaTime * 1000.0f;
-	if (!DesiredMovementThisFrame.IsNearlyZero())
+	if (isLockedForward || isLockedRight)
 	{
-		FHitResult Hit;
-		SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
+		CurrLocation = GetOwner()->GetActorLocation();
+		TargetLocation = CurrLocation + FVector(ConsumeInputVector().GetClampedToMaxSize(1.0f) * 200);
 
-		// If we bumped into something, try to slide along it
-		if (Hit.IsValidBlockingHit())
+		// Get (and then clear) the movement vector that we set in ATPPawn::Tick
+		FVector CurrEnd;
+		CurrEnd = FMath::Lerp(CurrLocation, TargetLocation, 0.1f);
+		FVector  DesiredMovementThisFrame = CurrEnd - CurrLocation;
+		if (!DesiredMovementThisFrame.IsNearlyZero())
 		{
-			SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
+			FHitResult Hit;
+			SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
+			// If we bumped into something, try to slide along it
+			if (Hit.IsValidBlockingHit())
+			{
+				SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
+			}
+		}
+		//CurrLocation = CurrEnd;
+
+		if (CurrLocation == TargetLocation)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("Movement is done")));
+			if (isLockedForward) {
+				isLockedRight = false; 				
+				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("isLockedRight = false")));
+			}
+			if (isLockedRight) {
+				isLockedForward = false;
+				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("isLockedForward = false")));
+			}
 		}
 	}
 };
