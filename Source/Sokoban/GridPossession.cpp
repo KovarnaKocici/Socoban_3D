@@ -27,10 +27,8 @@ AGridPossession::AGridPossession(const FObjectInitializer &ObjectInitializer)
 
 	//Create Snap Component
 	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
+	SnapComponent->SetTraceLength(1000.f);
 
-	//Initialize delta transform
-	DeltaMove = FVector(0.f, 0.f, 0.f);
-	DeltaSize = FVector(0.f, 0.f, 0.f);
 }
 
 // Called when the game starts or when spawned

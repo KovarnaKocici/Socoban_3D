@@ -6,3 +6,4 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSnapping, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogCollide, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogMovement, Log, All);

@@ -36,8 +36,7 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	// Create an instance of our movement component, and tell it to update the root.
 	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
-	MovementComponent->isLockedForward = false;
-	MovementComponent->isLockedRight = false;
+	MovementComponent->SetAlpha(0.05f);
 
 	// Take control of the default player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -56,14 +55,21 @@ void ATPPawn::BeginPlay()
 void ATPPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FRotator NewYaw = GetActorRotation();
-	NewYaw.Yaw += MouseInput.X;
-	SetActorRotation(NewYaw);
 	
-	FRotator NewPitch = SpringArmComponent->GetComponentRotation();
-	NewPitch.Pitch = FMath::Clamp(NewPitch.Pitch + MouseInput.Y, -80.f, 0.f);
-	SpringArmComponent->SetWorldRotation(NewPitch);
+	//Update camera
+	FRotator NewRotation = SpringArmComponent->GetComponentRotation();
+	NewRotation.Yaw += MouseInput.X;
+	for (int k = 0; k <= 2; k++) {
+		if (FMath::IsNearlyEqual(FMath::Abs(NewRotation.Yaw), 90.f * k, 30.f))
+		{
+			FRotator NewYaw = GetActorRotation();
+			NewYaw.Yaw = NewRotation.Yaw / FMath::Abs(NewRotation.Yaw) * 90.f * k;
+			SetActorRotation(NewYaw);
+			break;
+		}
+	}
+	NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + MouseInput.Y, -80.f, 0.f);
+	SpringArmComponent->SetWorldRotation(NewRotation);
 }
 
 // Called to bind functionality to input
@@ -86,40 +92,40 @@ UPawnMovementComponent* ATPPawn::GetMovementComponent() const
 	return MovementComponent;
 }
 
-void ATPPawn::MouseYaw(float axis)
+void ATPPawn::MouseYaw(float AxisValue)
 {
-	MouseInput.X = axis;
+	MouseInput.X = AxisValue;
 }
 
-void ATPPawn::MousePitch(float axis)
+void ATPPawn::MousePitch(float AxisValue)
 {
-	MouseInput.Y = axis;
+	MouseInput.Y = AxisValue;
 }
 
 void ATPPawn::MoveForward(float AxisValue)
 {
-	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->isLockedForward)
+	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->IsLocked)
 	{
 		if (AxisValue != 0)
 		{
-			MovementComponent->isLockedRight = true;
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("isLockedRight = true")));
-				MovementComponent->AddInputVector(GetActorForwardVector() * AxisValue);
+			UE_LOG(LogMovement, Log, TEXT("Move forward."));
+			//if rotated on 90
+			MovementComponent->Move(GetActorForwardVector(), AxisValue * SnapComponent->GetCurrCell()->Bounds.BoxExtent.Y * 2);
+			//else ->Bounds.BoxExtent.X*2
 		}
 	}
 }
 
 void ATPPawn::MoveRight(float AxisValue)
 {
-	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->isLockedRight)
+	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->IsLocked)
 	{
 		if (AxisValue != 0)
 		{
-			MovementComponent->isLockedForward = true;
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("isLockedForward = true")));
-			MovementComponent->AddInputVector(GetActorRightVector() * AxisValue);
+			UE_LOG(LogMovement, Log, TEXT("Move right.."));
+			//if rotated on 90
+			MovementComponent->Move(GetActorRightVector(), AxisValue * SnapComponent->GetCurrCell()->Bounds.BoxExtent.X * 2);
+			//else ->Bounds.BoxExtent.Y*2
 		}
 	}
 }

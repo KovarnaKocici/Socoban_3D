@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "SnapToGridComponent.generated.h"
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS()
 class SOKOBAN_API USnapToGridComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -26,12 +26,21 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float TraceLength = 0;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float traceLength = 1000;
+	UFUNCTION(BlueprintCallable)
+		void SetTraceLength(float Length);
+
+	UFUNCTION(BlueprintCallable)
+		float GetTraceLength();
+
+	UFUNCTION(BlueprintCallable)
+		UPrimitiveComponent* GetCellByLocation(FVector Location);
 
 	UFUNCTION(BlueprintCallable)
 		UPrimitiveComponent* GetCurrCell();

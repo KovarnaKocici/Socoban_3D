@@ -17,7 +17,6 @@ USnapToGridComponent::USnapToGridComponent()
 	// ...
 }
 
-
 // Called when the game starts
 void USnapToGridComponent::BeginPlay()
 {
@@ -27,7 +26,6 @@ void USnapToGridComponent::BeginPlay()
 	
 }
 
-
 // Called every frame
 void USnapToGridComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -36,13 +34,24 @@ void USnapToGridComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	// ...
 }
 
-UPrimitiveComponent* USnapToGridComponent::GetCurrCell() {
+void USnapToGridComponent::SetTraceLength(float Length) 
+{
+	if (Length > 0)
+		TraceLength = Length;
+}
+
+float USnapToGridComponent::GetTraceLength() 
+{
+	return TraceLength;
+}
+
+UPrimitiveComponent* USnapToGridComponent::GetCellByLocation(FVector Location) {
 	FHitResult Hit;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(GetOwner());
 
-	FVector Start = GetOwner()->GetActorLocation();
-	FVector End = Start + FVector(0, 0, -traceLength);
+	FVector Start = Location;
+	FVector End = Start + FVector(0, 0, -TraceLength);
 
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_GameTraceChannel2, CollisionParams)) //Grid
 	{
@@ -53,6 +62,10 @@ UPrimitiveComponent* USnapToGridComponent::GetCurrCell() {
 		}
 	}
 	return NULL;
+}
+
+UPrimitiveComponent* USnapToGridComponent::GetCurrCell() {
+	return GetCellByLocation(GetOwner()->GetActorLocation());
 }
 
 bool USnapToGridComponent::NewLocationXYRelToGrid(UPrimitiveComponent* cell, FVector& location) {
@@ -99,7 +112,7 @@ bool USnapToGridComponent::SnapToCell(UPrimitiveComponent* cell)
 
 bool USnapToGridComponent::SnapToFloor(int direction)
 {
-	FVector trace = FVector(0, 0, traceLength * direction);
+	FVector trace = FVector(0, 0, TraceLength * direction);
 	FVector CurrLocation = GetOwner()->GetActorLocation();
 	FVector NewLocationZ;
 	if (NewLocationZRelToActors( CurrLocation, CurrLocation + trace, direction, NewLocationZ)) {

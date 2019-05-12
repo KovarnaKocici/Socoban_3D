@@ -39,9 +39,9 @@ public:
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	//Camera 
-	void MouseYaw(float axis);
+	void MouseYaw(float AxisValue);
 
-	void MousePitch(float axis);
+	void MousePitch(float AxisValue);
 
 	FVector2D MouseInput;
 

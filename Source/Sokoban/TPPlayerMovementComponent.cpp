@@ -3,6 +3,7 @@
 
 #include "TPPlayerMovementComponent.h"
 #include "TPPawn.h"
+#include "Sokoban.h"
 #include "Engine/World.h"
 
 void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -15,39 +16,55 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 		return;
 	}
 
-	if (isLockedForward || isLockedRight)
+	if (IsLocked)
 	{
-		CurrLocation = GetOwner()->GetActorLocation();
-		TargetLocation = CurrLocation + FVector(ConsumeInputVector().GetClampedToMaxSize(1.0f) * 200);
+		FVector CurrLocation = GetOwner()->GetActorLocation();
+		UE_LOG(LogMovement, Log, TEXT("CurrLocation: %s  TargetLocation: %s"), *CurrLocation.ToString(), *TargetLocation.ToString());
 
-		// Get (and then clear) the movement vector that we set in ATPPawn::Tick
-		FVector CurrEnd;
-		CurrEnd = FMath::Lerp(CurrLocation, TargetLocation, 0.1f);
-		FVector  DesiredMovementThisFrame = CurrEnd - CurrLocation;
-		if (!DesiredMovementThisFrame.IsNearlyZero())
+		if (CurrLocation.Equals(TargetLocation))
 		{
-			FHitResult Hit;
-			SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
-			// If we bumped into something, try to slide along it
-			if (Hit.IsValidBlockingHit())
-			{
-				SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
-			}
+			GetOwner()->SetActorLocation(TargetLocation);
+			UE_LOG(LogMovement, Log, TEXT("Movement is done."));
+			IsLocked = false;
 		}
-		//CurrLocation = CurrEnd;
-
-		if (CurrLocation == TargetLocation)
+		else 
 		{
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("Movement is done")));
-			if (isLockedForward) {
-				isLockedRight = false; 				
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("isLockedRight = false")));
-			}
-			if (isLockedRight) {
-				isLockedForward = false;
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("isLockedForward = false")));
+			// Get (and then clear) the movement vector that we set in ATPPawn::Tick
+			FVector NewLocation = FMath::Lerp(StartLocation, TargetLocation, CurrAlpha);
+			CurrAlpha += Alpha;
+			FVector  DesiredMovementThisFrame = NewLocation - CurrLocation;
+			if (!DesiredMovementThisFrame.IsNearlyZero())
+			{
+				FHitResult Hit;
+				SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
+				// If we bumped into something, move back
+				if (Hit.IsValidBlockingHit())
+					ReverseMove();
 			}
 		}
 	}
-};
+}
+
+void UTPPlayerMovementComponent::SetAlpha(float Value) {
+	if (0 < Value && Value <= 1)
+		Alpha = Value;
+}
+
+float UTPPlayerMovementComponent::GetAlpha() {
+	return Alpha;
+}
+
+void UTPPlayerMovementComponent::Move(FVector Movement, float Value) {
+	IsLocked = true;
+	UE_LOG(LogMovement, Log, TEXT("Movement is locked."));
+	StartLocation = GetOwner()->GetActorLocation();
+	TargetLocation = GetOwner()->GetActorLocation() + FVector(Movement * Value);
+	AddInputVector(Movement * Value);
+	CurrAlpha = Alpha;
+}
+
+void UTPPlayerMovementComponent::ReverseMove() {
+	TargetLocation = StartLocation;
+	StartLocation = GetOwner()->GetActorLocation();
+	CurrAlpha = Alpha;
+}

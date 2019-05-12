@@ -14,15 +14,30 @@ class SOKOBAN_API UTPPlayerMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
 
+private: 
+	float CurrAlpha = 0.f;
+	FVector StartLocation = FVector(0.f, 0.f, 0.f);
+	FVector TargetLocation = FVector(0.f, 0.f, 0.f);
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Default)
+		float Alpha = 0.f;
+	
 public:
-	bool isLockedForward;
-	bool isLockedRight;
-
-	FVector CurrLocation;
-	FVector TargetLocation;
-
-	FTimerHandle MovementTimerHandle;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Default)
+		bool IsLocked = false;
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
-	
+
+	UFUNCTION(BlueprintCallable)
+		void SetAlpha(float Value);
+
+	UFUNCTION(BlueprintCallable)
+		float GetAlpha();
+
+	UFUNCTION(BlueprintCallable)
+		void Move(FVector Movement, float Value);
+
+	UFUNCTION(BlueprintCallable)
+		void ReverseMove();
 };

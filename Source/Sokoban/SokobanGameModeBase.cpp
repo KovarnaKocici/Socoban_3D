@@ -14,6 +14,6 @@ void ASokobanGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("HELLO WORLD"));
+	//if (GEngine)
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("HELLO WORLD"));
 }

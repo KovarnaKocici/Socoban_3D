@@ -28,8 +28,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 		class USnapToGridComponent* SnapComponent;
 
-	FVector DeltaMove;
-	FVector DeltaSize;
+	FVector DeltaMove = FVector(0.f, 0.f, 0.f);
+	FVector DeltaSize = FVector(0.f, 0.f, 0.f);
 
 protected:
 	// Called when the game starts or when spawned

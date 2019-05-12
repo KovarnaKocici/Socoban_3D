@@ -16,6 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	ABlock(const FObjectInitializer &ObjectInitializer);
 
+	//UPROPERTY(BlueprintReadWrite)
+	//bool IsMovable = false;
+
 protected:
 
 	UPROPERTY(BlueprintReadOnly)
