@@ -12,14 +12,16 @@
 ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 		: Super(ObjectInitializer)
 {
-	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ABlock::OnOverlapBegin);
 
 	TopCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TopCollisionComponent"));
 	TopCollisionComponent->SetCollisionProfileName(TEXT("Snap"));
 	TopCollisionComponent->SetupAttachment(RootComponent);
+
+	// Create an instance of our movement component, and tell it to update the root.
+	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
+	MovementComponent->UpdatedComponent = RootComponent;
+	MovementComponent->SetAlpha(0.025f);
 
 }
 
@@ -35,6 +37,11 @@ void ABlock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+UPawnMovementComponent* ABlock::GetMovementComponent() const
+{
+	return MovementComponent;
 }
 
 void ABlock::OnConstruction(const FTransform & Transform) {

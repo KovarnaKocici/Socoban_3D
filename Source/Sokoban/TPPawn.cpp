@@ -34,10 +34,10 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 
-	//// Create an instance of our movement component, and tell it to update the root.
-	//MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
-	//MovementComponent->UpdatedComponent = RootComponent;
-	//MovementComponent->SetAlpha(0.05f);
+	// Create an instance of our movement component, and tell it to update the root.
+	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
+	MovementComponent->UpdatedComponent = RootComponent;
+	MovementComponent->SetAlpha(0.025f);
 
 	// Take control of the default player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -88,10 +88,10 @@ void ATPPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-//UPawnMovementComponent* ATPPawn::GetMovementComponent() const
-//{
-//	return MovementComponent;
-//}
+UPawnMovementComponent* ATPPawn::GetMovementComponent() const
+{
+	return MovementComponent;
+}
 
 void ATPPawn::MouseYaw(float AxisValue)
 {

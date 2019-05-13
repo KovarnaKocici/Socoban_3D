@@ -16,4 +16,11 @@ class SOKOBAN_API ASokobanGameModeBase : public AGameModeBase
 
 	ASokobanGameModeBase(const FObjectInitializer& ObjectInitializer);
 	virtual void StartPlay() override;
+
+public:
+	int InitNumMarkers;
+	int CurrNumMarkers;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 };

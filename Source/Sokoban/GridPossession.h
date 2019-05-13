@@ -28,9 +28,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 		class USnapToGridComponent* SnapComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-		class UTPPlayerMovementComponent* MovementComponent;
-
 	FVector DeltaMove = FVector(0.f, 0.f, 0.f);
 	FVector DeltaSize = FVector(0.f, 0.f, 0.f);
 
@@ -54,8 +51,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnConstruction(const FTransform & Transform) override;
-
-	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	virtual void EditorApplyTranslation(const FVector & DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
 

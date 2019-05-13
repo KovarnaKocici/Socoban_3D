@@ -26,8 +26,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool IsPushing = false;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	//class UTPPlayerMovementComponent* MovementComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
+		class UTPPlayerMovementComponent* MovementComponent;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,6 +59,8 @@ public:
 
 	//ConstructionScript
 	virtual void OnConstruction(const FTransform & Transform) override;
+
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	UFUNCTION(BlueprintCallable)
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

@@ -59,8 +59,6 @@ void AGrid::OnConstruction(const FTransform & Transform) {
 				CellCollision->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 				CellCollision->SetBoxExtent(FVector(MeshBounds.GetExtent().X, MeshBounds.GetExtent().Y, collisionH));
 				CellCollision->SetRelativeLocation(FVector(0, 0, MeshBounds.GetExtent().Z * 2 - collisionH));
-				CellCollision->OnComponentBeginOverlap.AddDynamic(this, &AGrid::OnOverlapBegin);
-				CellCollision->OnComponentEndOverlap.AddDynamic(this, &AGrid::OnOverlapEnd);
 				CellCollision->SetCollisionProfileName(TEXT("Snap"));
 				CellCollision->SetGenerateOverlapEvents(true);
 			}
@@ -76,21 +74,5 @@ UMaterialInterface* AGrid::SwitchCellMaterial(int row, int column)
 		case 0:return Material1;
 		case 1:	return Material2;
 		default: return NULL;
-	}
-}
-
-void AGrid::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
-	{
-		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
-	}
-}
-
-void AGrid::OnOverlapEnd(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
-	{
-		UE_LOG(LogCollide, Log, TEXT("%s not any more overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
 	}
 }

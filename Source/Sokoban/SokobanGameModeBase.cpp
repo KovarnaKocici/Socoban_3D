@@ -2,18 +2,32 @@
 
 
 #include "SokobanGameModeBase.h"
-//#include "TPPawn.h"
+#include "Marker.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 ASokobanGameModeBase::ASokobanGameModeBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	//DefaultPawnClass = ATPPawn::StaticClass();
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ASokobanGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	//if (GEngine)
-	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("HELLO WORLD"));
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMarker::StaticClass(), FoundActors);
+	InitNumMarkers = FoundActors.Num();
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Number of markers is: %d"), InitNumMarkers);
+}
+
+void ASokobanGameModeBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if(CurrNumMarkers == InitNumMarkers)
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("YOU WON"));
+
 }
