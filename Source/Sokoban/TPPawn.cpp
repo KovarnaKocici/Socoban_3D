@@ -3,15 +3,16 @@
 
 #include "TPPawn.h"
 #include "Sokoban.h"
+#include "Block.h"
 #include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Classes/Camera/CameraComponent.h"
-#include "TPPlayerMovementComponent.h"
 #include "SnapToGridComponent.h"
 #include "Components/InputComponent.h"
+#include "TPPlayerMovementComponent.h"
 
 
 // Sets default values
@@ -21,8 +22,8 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComponent->OnComponentHit.AddDynamic(this, &ATPPawn::OnCompHit);
 	MeshComponent->SetCollisionObjectType(ECC_Pawn);
+	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ATPPawn::OnOverlapBegin);
 
 	//Camera
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -33,10 +34,10 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 
-	// Create an instance of our movement component, and tell it to update the root.
-	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
-	MovementComponent->UpdatedComponent = RootComponent;
-	MovementComponent->SetAlpha(0.05f);
+	//// Create an instance of our movement component, and tell it to update the root.
+	//MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
+	//MovementComponent->UpdatedComponent = RootComponent;
+	//MovementComponent->SetAlpha(0.05f);
 
 	// Take control of the default player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -87,10 +88,10 @@ void ATPPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-UPawnMovementComponent* ATPPawn::GetMovementComponent() const
-{
-	return MovementComponent;
-}
+//UPawnMovementComponent* ATPPawn::GetMovementComponent() const
+//{
+//	return MovementComponent;
+//}
 
 void ATPPawn::MouseYaw(float AxisValue)
 {
@@ -109,9 +110,9 @@ void ATPPawn::MoveForward(float AxisValue)
 		if (AxisValue != 0)
 		{
 			UE_LOG(LogMovement, Log, TEXT("Move forward."));
-			//if rotated on 90
-			MovementComponent->Move(GetActorForwardVector(), AxisValue * SnapComponent->GetCurrCell()->Bounds.BoxExtent.Y * 2);
-			//else ->Bounds.BoxExtent.X*2
+			FVector Movement = GetActorForwardVector() * AxisValue;
+			if(ValidGridMovement(GetActorLocation(), Movement, EMoveDirection::MoveForward))
+				MovementComponent->Move(Movement, AxisValue, EMoveDirection::MoveForward);
 		}
 	}
 }
@@ -122,25 +123,60 @@ void ATPPawn::MoveRight(float AxisValue)
 	{
 		if (AxisValue != 0)
 		{
-			UE_LOG(LogMovement, Log, TEXT("Move right.."));
-			//if rotated on 90
-			MovementComponent->Move(GetActorRightVector(), AxisValue * SnapComponent->GetCurrCell()->Bounds.BoxExtent.X * 2);
-			//else ->Bounds.BoxExtent.Y*2
+			UE_LOG(LogMovement, Log, TEXT("Move right."));
+			FVector Movement = GetActorRightVector() * AxisValue;
+			if (ValidGridMovement(GetActorLocation(), Movement, EMoveDirection::MoveRight))
+				MovementComponent->Move(Movement, AxisValue, EMoveDirection::MoveRight);
 		}
 	}
 }
 
-void ATPPawn::OnConstruction(const FTransform & Transform) {
+void ATPPawn::Push(ABlock* Block)
+{
+	IsPushing = true;
+	FVector Movement = FVector(0.f, 0.f, 0.f);
+	if (MovementComponent->Direction == EMoveDirection::MoveForward)
+	Movement = GetActorForwardVector() * MovementComponent->GetAxisValue();
+	else
+		if (MovementComponent->Direction == EMoveDirection::MoveRight)
+			Movement = GetActorRightVector() * MovementComponent->GetAxisValue();
+
+	if (ValidGridMovement(Block->GetActorLocation(), Movement, MovementComponent->Direction))
+	{
+		//Push
+		UE_LOG(LogMovement, Log, TEXT("Push."));
+		Block->MovementComponent->Move(Movement, MovementComponent->GetAxisValue(), MovementComponent->Direction);
+	}
+	else 
+		MovementComponent->ReverseMove();
+
+}
+
+void ATPPawn::OnConstruction(const FTransform & Transform) 
+{
 	Super::OnConstruction(Transform);
 }
 
-
-void ATPPawn::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void  ATPPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		UE_LOG(LogCollide, Log, TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName());
-		//if (GEngine)
-			//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName()));
+		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
+		ABlock* block = Cast<ABlock>(OtherActor);
+		if (block)
+		{
+			if (block->IsPushable && !IsPushing)
+			{
+				Push(block);
+				//Continue move
+			}
+		else
+			if (!block->IsPushable || block->IsPushable && block->IsHitted)
+			{
+				MovementComponent->ReverseMove();
+				block->IsHitted = false;
+				UE_LOG(LogMovement, Log, TEXT("Reverse move."));
+			}
+		}
 	}
 }

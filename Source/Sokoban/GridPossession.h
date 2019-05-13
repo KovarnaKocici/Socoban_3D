@@ -28,6 +28,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 		class USnapToGridComponent* SnapComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
+		class UTPPlayerMovementComponent* MovementComponent;
+
 	FVector DeltaMove = FVector(0.f, 0.f, 0.f);
 	FVector DeltaSize = FVector(0.f, 0.f, 0.f);
 
@@ -41,10 +44,18 @@ protected:
 	FVector Apply(const FVector & CurrValue, FVector & Accumulator, const FVector & Delta);
 
 public:	
+	enum EMoveDirection
+	{
+		MoveForward = 1 UMETA(DisplayName = "MoveForward"),
+		MoveRight = 0 UMETA(DisplayName = "MoveRight ")
+	};
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnConstruction(const FTransform & Transform) override;
+
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	virtual void EditorApplyTranslation(const FVector & DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
 
@@ -52,10 +63,12 @@ public:
 
 	virtual void PostEditMove(bool bFinished) override;
 
-
 	UFUNCTION()
 		void ApplyTranslation(const FVector & DeltaTranslation);
 
 	UFUNCTION()
 		void ApplyScale(const FVector & DeltaScale);
+
+	UFUNCTION()
+		bool ValidGridMovement(const FVector & StartLocation, FVector & DesiredMovement, int direction);
 };

@@ -29,6 +29,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float TraceLength = 0;
 
+	UFUNCTION(BlueprintCallable)
+		bool NewLocationXYRelToGrid(UPrimitiveComponent* cell, FVector& location);
+
+	UFUNCTION(BlueprintCallable)
+		bool NewLocationZRelToActors(FVector Start, FVector  End, int direction, FVector& location);
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -50,12 +56,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		bool SnapToFloor(int direction);
-
-	UFUNCTION(BlueprintCallable)
-		bool NewLocationXYRelToGrid(UPrimitiveComponent* cell, FVector& location);
-
-	UFUNCTION(BlueprintCallable)
-		bool NewLocationZRelToActors(FVector Start, FVector  End, int direction, FVector& location);
 };
 
 

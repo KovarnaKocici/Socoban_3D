@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "GridPossession.h"
+#include "Block.h"
 #include "TPPawn.generated.h"
 
 UCLASS()
@@ -22,8 +23,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
 	class UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
-	class UTPPlayerMovementComponent* MovementComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool IsPushing = false;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Components)
+	//class UTPPlayerMovementComponent* MovementComponent;
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,7 +40,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual UPawnMovementComponent* GetMovementComponent() const override;
+	//virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	//Camera 
 	void MouseYaw(float AxisValue);
@@ -50,10 +54,11 @@ public:
 
 	void MoveRight(float AxisValue);
 
+	void Push(ABlock* Block);
+
 	//ConstructionScript
 	virtual void OnConstruction(const FTransform & Transform) override;
 
 	UFUNCTION(BlueprintCallable)
-		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

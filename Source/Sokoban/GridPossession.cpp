@@ -8,6 +8,7 @@
 #include "SnapToGridComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TPPlayerMovementComponent.h"
 
 // Sets default values
 AGridPossession::AGridPossession(const FObjectInitializer &ObjectInitializer)
@@ -16,7 +17,8 @@ AGridPossession::AGridPossession(const FObjectInitializer &ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetCollisionProfileName(TEXT("BlockAll"));
+	MeshComponent->SetCollisionProfileName(TEXT("OverlapAll"));
+	//MeshComponent->SetNotifyRigidBodyCollision(true);
 	//Mesh as Root
 	RootComponent = MeshComponent;
 
@@ -28,6 +30,11 @@ AGridPossession::AGridPossession(const FObjectInitializer &ObjectInitializer)
 	//Create Snap Component
 	SnapComponent = CreateDefaultSubobject<USnapToGridComponent>(TEXT("SnapComponent"));
 	SnapComponent->SetTraceLength(1000.f);
+
+	// Create an instance of our movement component, and tell it to update the root.
+	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
+	MovementComponent->UpdatedComponent = RootComponent;
+	MovementComponent->SetAlpha(0.025f);
 
 }
 
@@ -45,7 +52,8 @@ void AGridPossession::Tick(float DeltaTime)
 
 }
 
-void AGridPossession::OnConstruction(const FTransform & Transform) {
+void AGridPossession::OnConstruction(const FTransform & Transform) 
+{
 	if (DefaultMesh) {
 		int collisionH = 1;
 		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
@@ -57,6 +65,11 @@ void AGridPossession::OnConstruction(const FTransform & Transform) {
 		InnerCollisionComponent->SetRelativeLocation(FVector(0.f, 0.f, MeshBounds.Z));
 
 	}
+}
+
+UPawnMovementComponent* AGridPossession::GetMovementComponent() const
+{
+	return MovementComponent;
 }
 
 void AGridPossession::EditorApplyTranslation(const FVector & DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown)
@@ -110,18 +123,21 @@ void AGridPossession::PostEditMove(bool bFinished)
 	}
 }
 
-void AGridPossession::ApplyTranslation(const FVector & DeltaTranslation) {
+void AGridPossession::ApplyTranslation(const FVector & DeltaTranslation) 
+{
 
 	FVector NewLocation = Apply(GetActorLocation(), DeltaMove, DeltaTranslation);
 	SetActorLocation(NewLocation);
 }
 
-void AGridPossession::ApplyScale(const FVector & DeltaScale) {
+void AGridPossession::ApplyScale(const FVector & DeltaScale) 
+{
 	FVector NewScale = Apply(GetActorScale3D(), DeltaSize, DeltaScale);
 	SetActorScale3D(NewScale);
 }
 
-FVector AGridPossession::Apply(const FVector & CurrValue, FVector & Accumulator, const FVector & Delta) {
+FVector AGridPossession::Apply(const FVector & CurrValue, FVector & Accumulator, const FVector & Delta) 
+{
 	FVector NewValue = FVector(0.f, 0.f, 0.f);
 
 	Accumulator.X += Delta.X;
@@ -136,3 +152,37 @@ FVector AGridPossession::Apply(const FVector & CurrValue, FVector & Accumulator,
 	return NewValue;
 }
 
+bool AGridPossession::ValidGridMovement(const FVector & StartLocation, FVector & DesiredMovement, int direction)
+{
+	//Check start location
+	UPrimitiveComponent* cell = SnapComponent->GetCellByLocation(StartLocation);
+	if (cell)
+	{
+		float accuracy = 0;
+
+		if (direction == EMoveDirection::MoveForward)
+		{
+			if (FMath::IsNearlyEqual(FMath::Abs(GetActorRotation().Yaw), 90, 1.f))
+				accuracy = cell->Bounds.BoxExtent.Y * 2;
+			else
+				accuracy = cell->Bounds.BoxExtent.X * 2;
+		}
+		else
+		if (direction == EMoveDirection::MoveRight)
+		{
+			if (FMath::IsNearlyEqual(FMath::Abs(GetActorRotation().Yaw), 90, 1.f))
+				accuracy = cell->Bounds.BoxExtent.X * 2;
+			else
+				accuracy = cell->Bounds.BoxExtent.Y * 2;
+		}
+
+		//Check end location
+		if (SnapComponent->GetCellByLocation(StartLocation + DesiredMovement * accuracy))
+		{
+			DesiredMovement *= accuracy;
+			return true;
+		}
+	}
+
+	return false;
+}

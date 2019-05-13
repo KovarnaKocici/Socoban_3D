@@ -16,6 +16,7 @@ class SOKOBAN_API UTPPlayerMovementComponent : public UPawnMovementComponent
 
 private: 
 	float CurrAlpha = 0.f;
+	float AxisValue = 0;
 	FVector StartLocation = FVector(0.f, 0.f, 0.f);
 	FVector TargetLocation = FVector(0.f, 0.f, 0.f);
 
@@ -27,6 +28,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Default)
 		bool IsLocked = false;
 
+	int Direction = -1;
+
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -36,7 +39,10 @@ public:
 		float GetAlpha();
 
 	UFUNCTION(BlueprintCallable)
-		void Move(FVector Movement, float Value);
+		float GetAxisValue();
+
+	UFUNCTION(BlueprintCallable)
+		void Move(FVector  CurrMovement, float Axis, int CurrDirection);
 
 	UFUNCTION(BlueprintCallable)
 		void ReverseMove();

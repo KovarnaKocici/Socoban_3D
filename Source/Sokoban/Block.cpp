@@ -6,7 +6,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Engine/StaticMesh.h"
 #include "Components/BoxComponent.h"
-
+#include "TPPlayerMovementComponent.h"
 
 // Sets default values
 ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
@@ -15,11 +15,10 @@ ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComponent->OnComponentHit.AddDynamic(this, &ABlock::OnCompHit);
+	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ABlock::OnOverlapBegin);
 
 	TopCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TopCollisionComponent"));
 	TopCollisionComponent->SetCollisionProfileName(TEXT("Snap"));
-	TopCollisionComponent->OnComponentCollisionSettingsChangedEvent;
 	TopCollisionComponent->SetupAttachment(RootComponent);
 
 }
@@ -51,10 +50,16 @@ void ABlock::OnConstruction(const FTransform & Transform) {
 
 }
 
-void ABlock::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void  ABlock::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
-		UE_LOG(LogCollide, Log, TEXT("%s hits %s"), *this->GetName(), *OtherActor->GetName());
+		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
+		ABlock* block = Cast<ABlock>(OtherActor);
+		if (block)
+		{
+			MovementComponent->ReverseMove();
+			IsHitted = true;
+		}
 	}
 }
