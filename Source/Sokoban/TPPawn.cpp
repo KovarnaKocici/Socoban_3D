@@ -134,6 +134,7 @@ void ATPPawn::MoveRight(float AxisValue)
 void ATPPawn::Push(ABlock* Block)
 {
 	IsPushing = true;
+	Block->IsHitted = false;
 	FVector Movement = FVector(0.f, 0.f, 0.f);
 	if (MovementComponent->Direction == EMoveDirection::MoveForward)
 	Movement = GetActorForwardVector() * MovementComponent->GetAxisValue();
@@ -147,8 +148,11 @@ void ATPPawn::Push(ABlock* Block)
 		UE_LOG(LogMovement, Log, TEXT("Push."));
 		Block->MovementComponent->Move(Movement, MovementComponent->GetAxisValue(), MovementComponent->Direction);
 	}
-	else 
+	else
+	{
 		MovementComponent->ReverseMove();
+		UE_LOG(LogMovement, Log, TEXT("Reverse move in Pawn push. IsPushing %d"), IsPushing);
+	}
 
 }
 
@@ -171,11 +175,11 @@ void  ATPPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
 				//Continue move
 			}
 		else
-			if (!block->IsPushable || block->IsPushable && block->IsHitted)
+			if ( !block->IsPushable || (block->IsPushable && block->IsHitted))
 			{
 				MovementComponent->ReverseMove();
+				UE_LOG(LogMovement, Log, TEXT("Reverse move in Pawn overlap. "));
 				block->IsHitted = false;
-				UE_LOG(LogMovement, Log, TEXT("Reverse move."));
 			}
 		}
 	}

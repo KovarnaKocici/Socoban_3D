@@ -76,7 +76,7 @@ void AGridPossession::EditorApplyScale(const FVector & DeltaScale, const FVector
 
 }
 
-#if WITH_EDITOR
+//#if WITH_EDITOR
 void AGridPossession::PostEditMove(bool bFinished)
 {
 	if (bFinished) {
@@ -112,7 +112,7 @@ void AGridPossession::PostEditMove(bool bFinished)
 		DeltaSize = FVector(0.f, 0.f, 0.f);
 	}
 }
-#endif
+//#endif
 
 void AGridPossession::ApplyTranslation(const FVector & DeltaTranslation) 
 {

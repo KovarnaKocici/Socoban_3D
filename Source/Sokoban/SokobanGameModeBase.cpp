@@ -19,15 +19,15 @@ void ASokobanGameModeBase::StartPlay()
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMarker::StaticClass(), FoundActors);
 	InitNumMarkers = FoundActors.Num();
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Number of markers is: %d"), InitNumMarkers);
+	/*if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Number of markers is: %d"), InitNumMarkers);*/
 }
 
 void ASokobanGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if(CurrNumMarkers == InitNumMarkers)
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("YOU WON"));
+	//if(CurrNumMarkers == InitNumMarkers)
+		//if (GEngine)
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("YOU WON"));
 
 }

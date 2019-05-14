@@ -26,9 +26,10 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 		{
 			GetOwner()->SetActorLocation(TargetLocation);
 			UE_LOG(LogMovement, Log, TEXT("Movement is done."));
-			ATPPawn* This = Cast<ATPPawn>(GetOwner());
-			if(This)
-				This->IsPushing = false;
+			ATPPawn* ThisPawn = Cast<ATPPawn>(GetOwner());
+			if(ThisPawn)
+				ThisPawn->IsPushing = false;
+			ABlock* ThisBlock = Cast<ABlock>(GetOwner());
 			IsLocked = false;
 		}
 		else 

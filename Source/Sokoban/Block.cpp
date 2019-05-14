@@ -67,6 +67,7 @@ void  ABlock::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 		{
 			MovementComponent->ReverseMove();
 			IsHitted = true;
+			UE_LOG(LogMovement, Log, TEXT("Reverse move in Box overlap."));
 		}
 	}
 }
