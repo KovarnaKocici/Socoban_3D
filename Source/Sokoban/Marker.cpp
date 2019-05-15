@@ -3,15 +3,21 @@
 
 #include "Marker.h"
 #include "Sokoban.h"
+#include "Block.h"
 #include "SokobanGameModeBase.h"
 #include "Engine/StaticMesh.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AMarker::AMarker(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AMarker::OnOverlapBegin);
-	MeshComponent->OnComponentEndOverlap.AddDynamic(this, &AMarker::OnOverlapEnd);
+	TopCenterCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TopCollisionComponent"));
+	TopCenterCollisionComponent->SetCollisionProfileName(TEXT("OverlapAll"));
+	TopCenterCollisionComponent->SetupAttachment(RootComponent);
+
+	TopCenterCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMarker::OnOverlapBegin);
+	TopCenterCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AMarker::OnOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +36,12 @@ void AMarker::Tick(float DeltaTime)
 void AMarker::OnConstruction(const FTransform & Transform) {
 	if (DefaultMesh) {
 		Super::OnConstruction(Transform);
+
+		int collisionSize = 1;
+		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
+
+		TopCenterCollisionComponent->SetBoxExtent(FVector(collisionSize, collisionSize, collisionSize));
+		TopCenterCollisionComponent->SetRelativeLocation(FVector(0.f, 0.f, MeshBounds.Z * 2 + collisionSize*2));
 	}
 }
 
@@ -38,8 +50,11 @@ void AMarker::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
 		UE_LOG(LogCollision, Log, TEXT("%s overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
-		ASokobanGameModeBase* gm = (ASokobanGameModeBase*)GetWorld()->GetAuthGameMode();
-		gm->CurrNumMarkers += 1;
+		ABlock* block = Cast<ABlock>(OtherActor);
+		if (block) {
+			ASokobanGameModeBase* gm = (ASokobanGameModeBase*)GetWorld()->GetAuthGameMode();
+			gm->CurrNumMarkers += 1;
+		}
 	}
 }
 
@@ -48,7 +63,10 @@ void  AMarker::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{
 		UE_LOG(LogCollide, Log, TEXT("%s not any more overlapped with %s."), *OverlappedComp->GetName(), *OtherActor->GetName());
-		ASokobanGameModeBase* gm = (ASokobanGameModeBase*)GetWorld()->GetAuthGameMode();
-		gm->CurrNumMarkers -= 1;
+		ABlock* block = Cast<ABlock>(OtherActor);
+		if (block) {
+			ASokobanGameModeBase* gm = (ASokobanGameModeBase*)GetWorld()->GetAuthGameMode();
+			gm->CurrNumMarkers -= 1;
+		}
 	}
 }

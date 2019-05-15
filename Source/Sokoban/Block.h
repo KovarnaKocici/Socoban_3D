@@ -27,7 +27,7 @@ public:
 protected:
 
 	UPROPERTY(BlueprintReadOnly)
-		class UBoxComponent* TopCollisionComponent;
+		class UBoxComponent* TopCoverCollisionComponent;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -15,6 +15,9 @@ class SOKOBAN_API AMarker : public AGridPossession
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(BlueprintReadOnly)
+		class UBoxComponent* TopCenterCollisionComponent;
+
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
 

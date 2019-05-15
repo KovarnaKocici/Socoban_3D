@@ -29,7 +29,6 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 			ATPPawn* ThisPawn = Cast<ATPPawn>(GetOwner());
 			if(ThisPawn)
 				ThisPawn->IsPushing = false;
-			ABlock* ThisBlock = Cast<ABlock>(GetOwner());
 			IsLocked = false;
 		}
 		else 

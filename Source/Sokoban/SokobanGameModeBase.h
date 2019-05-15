@@ -18,7 +18,9 @@ class SOKOBAN_API ASokobanGameModeBase : public AGameModeBase
 	virtual void StartPlay() override;
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int InitNumMarkers;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int CurrNumMarkers;
 
 	// Called every frame

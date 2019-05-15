@@ -43,10 +43,25 @@ public:
 
 	//virtual UPawnMovementComponent* GetMovementComponent() const override;
 
-	//Camera 
+	//Camera Rotation
 	void MouseYaw(float AxisValue);
 
 	void MousePitch(float AxisValue);
+
+	//Camera Zoom
+	void MouseZoomIn();
+
+	void MouseZoomOut();
+
+	void Zoom(float AxisValue);
+
+	float CameraZoom_v;
+
+	const float MinZoom = 150.f;
+
+	const float MaxZoom = 800.f;
+
+	const float DiffZoom = 25.f;
 
 	FVector2D MouseInput;
 

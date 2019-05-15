@@ -16,7 +16,7 @@ AGridPossession::AGridPossession(const FObjectInitializer &ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetCollisionProfileName(TEXT("OverlapAll"));
+	MeshComponent->SetCollisionProfileName(TEXT("BlockAll"));
 	
 	//Mesh as Root
 	RootComponent = MeshComponent;

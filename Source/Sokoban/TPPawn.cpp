@@ -29,6 +29,7 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 400.f;
+	CameraZoom_v = SpringArmComponent->TargetArmLength;
 	SpringArmComponent->SetWorldRotation(FRotator(-60.f, 0.f, 0.f));
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -81,6 +82,8 @@ void ATPPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	//View
 	PlayerInputComponent->BindAxis("MouseYaw", this, &ATPPawn::MouseYaw);
 	PlayerInputComponent->BindAxis("MousePitch", this, &ATPPawn::MousePitch);
+	PlayerInputComponent->BindAction("ZoomIn", IE_Pressed, this, &ATPPawn::MouseZoomIn);
+	PlayerInputComponent->BindAction("ZoomOut",  IE_Pressed, this, &ATPPawn::MouseZoomOut);
 
 	//Movements
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPPawn::MoveForward);
@@ -101,6 +104,36 @@ void ATPPawn::MouseYaw(float AxisValue)
 void ATPPawn::MousePitch(float AxisValue)
 {
 	MouseInput.Y = AxisValue;
+}
+
+void ATPPawn::MouseZoomIn()
+{
+	Zoom(1);
+}
+
+void ATPPawn::MouseZoomOut()
+{
+	Zoom(-1);
+}
+
+void  ATPPawn::Zoom(float  AxisValue) {
+	CameraZoom_v = CameraZoom_v + DiffZoom * AxisValue;
+
+	if (CameraZoom_v <= MinZoom)
+	{
+		SpringArmComponent->TargetArmLength = MinZoom;
+		CameraZoom_v = MinZoom;
+	}
+	else
+		if (CameraZoom_v >= MaxZoom)
+		{
+			SpringArmComponent->TargetArmLength = MaxZoom;
+			CameraZoom_v = MaxZoom;
+		}
+		else
+		{
+			SpringArmComponent->TargetArmLength = CameraZoom_v;
+		}
 }
 
 void ATPPawn::MoveForward(float AxisValue)

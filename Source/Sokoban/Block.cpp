@@ -14,9 +14,9 @@ ABlock::ABlock(const FObjectInitializer &ObjectInitializer)
 {
 	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ABlock::OnOverlapBegin);
 
-	TopCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TopCollisionComponent"));
-	TopCollisionComponent->SetCollisionProfileName(TEXT("Snap"));
-	TopCollisionComponent->SetupAttachment(RootComponent);
+	TopCoverCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TopCollisionComponent"));
+	TopCoverCollisionComponent->SetCollisionProfileName(TEXT("Snap"));
+	TopCoverCollisionComponent->SetupAttachment(RootComponent);
 
 	// Create an instance of our movement component, and tell it to update the root.
 	MovementComponent = CreateDefaultSubobject<UTPPlayerMovementComponent>(TEXT("MovementComponent"));
@@ -51,8 +51,8 @@ void ABlock::OnConstruction(const FTransform & Transform) {
 		int collisionH = 1;
 		FVector MeshBounds = DefaultMesh->GetBoundingBox().GetExtent();
 
-		TopCollisionComponent->SetBoxExtent(FVector(MeshBounds.X, MeshBounds.Y, collisionH));
-		TopCollisionComponent->SetRelativeLocation(FVector(0.f, 0.f, MeshBounds.Z * 2 - collisionH));
+		TopCoverCollisionComponent->SetBoxExtent(FVector(MeshBounds.X, MeshBounds.Y, collisionH));
+		TopCoverCollisionComponent->SetRelativeLocation(FVector(0.f, 0.f, MeshBounds.Z * 2 - collisionH));
 	}
 
 }
