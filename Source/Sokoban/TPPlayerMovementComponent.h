@@ -28,7 +28,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Default)
 		bool IsLocked = false;
 
-	int Direction = -1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Default)
+		bool IsMoving = false;
+
+
+	int Direction = 0;
+
+	FTimerHandle InputTimeHandle;
+	void EndTimer();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 

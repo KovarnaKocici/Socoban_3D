@@ -5,6 +5,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Engine/StaticMesh.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -33,7 +34,12 @@ void AGrid::Tick(float DeltaTime)
 }
 
 void AGrid::OnConstruction(const FTransform & Transform) {
+	APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if(controller)
+		controller->ClientMessage(TEXT("GridBeforeIf"), TEXT("OnConstruction"), 500);
 	if (DefaultMesh) {
+		if (controller)
+			controller->ClientMessage(TEXT("GridInIf"), TEXT("OnConstruction"), 500);
 		FBox MeshBounds = DefaultMesh->GetBoundingBox();
 		for (int i = 0; i < Rows; i++)
 		{

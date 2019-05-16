@@ -38,44 +38,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	//virtual UPawnMovementComponent* GetMovementComponent() const override;
-
-	//Camera Rotation
-	void MouseYaw(float AxisValue);
-
-	void MousePitch(float AxisValue);
-
-	//Camera Zoom
-	void MouseZoomIn();
-
-	void MouseZoomOut();
-
-	void Zoom(float AxisValue);
-
-	float CameraZoom_v;
-
-	const float MinZoom = 150.f;
-
-	const float MaxZoom = 800.f;
-
-	const float DiffZoom = 25.f;
-
-	FVector2D MouseInput;
-
-	//Movements
-	void MoveForward(float AxisValue);
-
-	void MoveRight(float AxisValue);
-
-	void Push(ABlock* Block);
-
 	//ConstructionScript
 	virtual void OnConstruction(const FTransform & Transform) override;
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
+
+	void Push(ABlock* Block);
 
 	UFUNCTION(BlueprintCallable)
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

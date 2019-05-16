@@ -44,7 +44,7 @@ public:
 	enum EMoveDirection
 	{
 		MoveForward = 1 UMETA(DisplayName = "MoveForward"),
-		MoveRight = 0 UMETA(DisplayName = "MoveRight ")
+		MoveRight = -1 UMETA(DisplayName = "MoveRight ")
 	};
 
 	// Called every frame
@@ -52,11 +52,15 @@ public:
 
 	virtual void OnConstruction(const FTransform & Transform) override;
 
+#if WITH_EDITOR
+
 	virtual void EditorApplyTranslation(const FVector & DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
 
 	virtual void EditorApplyScale(const FVector & DeltaScale, const FVector * PivotLocation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
 
 	virtual void PostEditMove(bool bFinished) override;
+
+#endif
 
 	UFUNCTION()
 		void ApplyTranslation(const FVector & DeltaTranslation);

@@ -11,7 +11,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Classes/Camera/CameraComponent.h"
 #include "SnapToGridComponent.h"
-#include "Components/InputComponent.h"
 #include "TPPlayerMovementComponent.h"
 
 
@@ -29,7 +28,6 @@ ATPPawn::ATPPawn(const FObjectInitializer &ObjectInitializer)
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 400.f;
-	CameraZoom_v = SpringArmComponent->TargetArmLength;
 	SpringArmComponent->SetWorldRotation(FRotator(-60.f, 0.f, 0.f));
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -58,110 +56,11 @@ void ATPPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	//Update camera
-	FRotator NewRotation = SpringArmComponent->GetComponentRotation();
-	NewRotation.Yaw += MouseInput.X;
-	for (int k = 0; k <= 2; k++) {
-		if (FMath::IsNearlyEqual(FMath::Abs(NewRotation.Yaw), 90.f * k, 30.f))
-		{
-			FRotator NewYaw = GetActorRotation();
-			NewYaw.Yaw = NewRotation.Yaw / FMath::Abs(NewRotation.Yaw) * 90.f * k;
-			SetActorRotation(NewYaw);
-			break;
-		}
-	}
-	NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + MouseInput.Y, -80.f, 0.f);
-	SpringArmComponent->SetWorldRotation(NewRotation);
-}
-
-// Called to bind functionality to input
-void ATPPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	//View
-	PlayerInputComponent->BindAxis("MouseYaw", this, &ATPPawn::MouseYaw);
-	PlayerInputComponent->BindAxis("MousePitch", this, &ATPPawn::MousePitch);
-	PlayerInputComponent->BindAction("ZoomIn", IE_Pressed, this, &ATPPawn::MouseZoomIn);
-	PlayerInputComponent->BindAction("ZoomOut",  IE_Pressed, this, &ATPPawn::MouseZoomOut);
-
-	//Movements
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATPPawn::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ATPPawn::MoveRight);
-
 }
 
 UPawnMovementComponent* ATPPawn::GetMovementComponent() const
 {
 	return MovementComponent;
-}
-
-void ATPPawn::MouseYaw(float AxisValue)
-{
-	MouseInput.X = AxisValue;
-}
-
-void ATPPawn::MousePitch(float AxisValue)
-{
-	MouseInput.Y = AxisValue;
-}
-
-void ATPPawn::MouseZoomIn()
-{
-	Zoom(1);
-}
-
-void ATPPawn::MouseZoomOut()
-{
-	Zoom(-1);
-}
-
-void  ATPPawn::Zoom(float  AxisValue) {
-	CameraZoom_v = CameraZoom_v + DiffZoom * AxisValue;
-
-	if (CameraZoom_v <= MinZoom)
-	{
-		SpringArmComponent->TargetArmLength = MinZoom;
-		CameraZoom_v = MinZoom;
-	}
-	else
-		if (CameraZoom_v >= MaxZoom)
-		{
-			SpringArmComponent->TargetArmLength = MaxZoom;
-			CameraZoom_v = MaxZoom;
-		}
-		else
-		{
-			SpringArmComponent->TargetArmLength = CameraZoom_v;
-		}
-}
-
-void ATPPawn::MoveForward(float AxisValue)
-{
-	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->IsLocked)
-	{
-		if (AxisValue != 0)
-		{
-			UE_LOG(LogMovement, Log, TEXT("Move forward."));
-			FVector Movement = GetActorForwardVector() * AxisValue;
-			if(ValidGridMovement(GetActorLocation(), Movement, EMoveDirection::MoveForward))
-				MovementComponent->Move(Movement, AxisValue, EMoveDirection::MoveForward);
-		}
-	}
-}
-
-void ATPPawn::MoveRight(float AxisValue)
-{
-	if (MovementComponent && (MovementComponent->UpdatedComponent == RootComponent) && !MovementComponent->IsLocked)
-	{
-		if (AxisValue != 0)
-		{
-			UE_LOG(LogMovement, Log, TEXT("Move right."));
-			FVector Movement = GetActorRightVector() * AxisValue;
-			if (ValidGridMovement(GetActorLocation(), Movement, EMoveDirection::MoveRight))
-				MovementComponent->Move(Movement, AxisValue, EMoveDirection::MoveRight);
-		}
-	}
 }
 
 void ATPPawn::Push(ABlock* Block)

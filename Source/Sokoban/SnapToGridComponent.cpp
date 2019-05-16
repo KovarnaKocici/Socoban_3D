@@ -57,7 +57,7 @@ UPrimitiveComponent* USnapToGridComponent::GetCellByLocation(FVector Location) {
 	{
 		if (Hit.GetActor() != NULL) {
 			UE_LOG(LogSnapping, Log, TEXT("Hit component is : %s."), *(Hit.GetComponent())->GetName());
-			DrawDebugLine(GetWorld(), Hit.TraceStart, Hit.Location, FColor::Green, false, 3.0f, 0, 3.0f);
+			//DrawDebugLine(GetWorld(), Hit.TraceStart, Hit.Location, FColor::Green, false, 3.0f, 0, 3.0f);
 			return Hit.GetComponent();
 		}
 	}

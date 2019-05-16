@@ -26,10 +26,10 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 		{
 			GetOwner()->SetActorLocation(TargetLocation);
 			UE_LOG(LogMovement, Log, TEXT("Movement is done."));
-			ATPPawn* ThisPawn = Cast<ATPPawn>(GetOwner());
-			if(ThisPawn)
-				ThisPawn->IsPushing = false;
+
+			GetWorld()->GetTimerManager().SetTimer(InputTimeHandle, this, &UTPPlayerMovementComponent::EndTimer, 0.2f, false);
 			IsLocked = false;
+
 		}
 		else 
 		{
@@ -38,6 +38,15 @@ void UTPPlayerMovementComponent::TickComponent(float DeltaTime, enum ELevelTick 
 			CurrAlpha += Alpha;
 			GetOwner()->SetActorLocation(NewLocation);
 		}
+	}
+}
+
+void UTPPlayerMovementComponent::EndTimer() {
+	
+	ATPPawn* ThisPawn = Cast<ATPPawn>(GetOwner());
+	if (ThisPawn) {
+		ThisPawn->IsPushing = false;
+		IsMoving = false;
 	}
 }
 
@@ -56,6 +65,7 @@ float UTPPlayerMovementComponent::GetAxisValue() {
 
 void UTPPlayerMovementComponent::Move(FVector CurrMovement, float Axis, int CurrDirection) {
 	IsLocked = true;
+	IsMoving = true;
 	UE_LOG(LogMovement, Log, TEXT("Movement is locked."));
 	AxisValue = Axis;
 	StartLocation = GetOwner()->GetActorLocation();

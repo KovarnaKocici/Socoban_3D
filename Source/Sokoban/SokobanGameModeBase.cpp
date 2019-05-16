@@ -3,6 +3,7 @@
 
 #include "SokobanGameModeBase.h"
 #include "Marker.h"
+#include "TPPlayerController.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 ASokobanGameModeBase::ASokobanGameModeBase(const FObjectInitializer& ObjectInitializer)
@@ -10,6 +11,8 @@ ASokobanGameModeBase::ASokobanGameModeBase(const FObjectInitializer& ObjectIniti
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
+
+	//PlayerControllerClass = ATPPlayerController::StaticClass();
 }
 
 void ASokobanGameModeBase::StartPlay()
