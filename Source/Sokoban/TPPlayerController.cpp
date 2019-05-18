@@ -31,9 +31,11 @@ void ATPPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	//Update camera
-	ATPPawn* pawn = Cast<ATPPawn>(GetPawn());
-	if (pawn) {
+	UpdateCamera();
+}
+
+void ATPPlayerController::UpdateCamera() {
+	if (ATPPawn* pawn = Cast<ATPPawn>(GetPawn())) {
 		FRotator NewRotation = pawn->SpringArmComponent->GetComponentRotation();
 		NewRotation.Yaw += MouseInput.X;
 		for (int k = 0; k <= 2; k++) {
@@ -50,7 +52,6 @@ void ATPPlayerController::PlayerTick(float DeltaTime)
 		pawn->SpringArmComponent->SetWorldRotation(NewRotation);
 	}
 }
-
 void ATPPlayerController::MouseYaw(float AxisValue)
 {
 	MouseInput.X = AxisValue;
@@ -72,8 +73,7 @@ void ATPPlayerController::MouseZoomOut()
 }
 
 void  ATPPlayerController::Zoom(float  AxisValue) {
-	ATPPawn* pawn = Cast<ATPPawn>(GetPawn());
-	if (pawn) {
+	if (ATPPawn* pawn = Cast<ATPPawn>(GetPawn())) {
 		CameraZoom_v = CameraZoom_v + DiffZoom * AxisValue;
 
 		if (CameraZoom_v <= MinZoom)
@@ -96,43 +96,29 @@ void  ATPPlayerController::Zoom(float  AxisValue) {
 
 void ATPPlayerController::MoveForward(float AxisValue)
 {
-	ATPPawn* pawn = Cast<ATPPawn>(GetPawn());
-	if (AxisValue != 0)
+	if (ATPPawn* pawn = Cast<ATPPawn>(GetPawn()))
 	{
-		
-		if (pawn) {
-			ClientMessage(TEXT("Pawn"), TEXT("MESAAGGE"), 500);
-			if (pawn->MovementComponent && pawn->MovementComponent->UpdatedComponent && !pawn->MovementComponent->IsLocked && !pawn->MovementComponent->IsMoving)
-			{
-				ClientMessage(TEXT("Component"), TEXT("MESAAGGE"), 500);
-				if (AxisValue != 0)
-				{
-					UE_LOG(LogMovement, Log, TEXT("Move forward."));
-					FVector Movement = pawn->GetActorForwardVector() * AxisValue;
-					if (pawn->ValidGridMovement(pawn->GetActorLocation(), Movement, pawn->MoveForward))
-					{
-						ClientMessage(TEXT("WORK"), TEXT("MESAAGGE"), 500);
-						pawn->MovementComponent->Move(Movement, AxisValue, pawn->MoveForward);
-					}
-				}
-			}
+		if (AxisValue != 0 && pawn->MovementComponent && pawn->MovementComponent->UpdatedComponent 
+			&& !pawn->MovementComponent->IsLocked && !pawn->MovementComponent->IsMoving)
+		{
+				UE_LOG(LogMovement, Log, TEXT("Move forward."));
+				FVector Movement = pawn->GetActorForwardVector() * AxisValue;
+				if (pawn->ValidGridMovement(pawn->GetActorLocation(), Movement, pawn->MoveForward))
+					pawn->MovementComponent->Move(Movement, AxisValue, pawn->MoveForward);
 		}
 	}
 }
 
 void ATPPlayerController::MoveRight(float AxisValue)
 {
-	ATPPawn* pawn = Cast<ATPPawn>(GetPawn());
-	if (pawn) {
-		if (pawn->MovementComponent && pawn->MovementComponent->UpdatedComponent && !pawn->MovementComponent->IsLocked && !pawn->MovementComponent->IsMoving)
+if (ATPPawn* pawn = Cast<ATPPawn>(GetPawn())) {
+	if (AxisValue != 0 && pawn->MovementComponent && pawn->MovementComponent->UpdatedComponent &&
+		!pawn->MovementComponent->IsLocked && !pawn->MovementComponent->IsMoving)
 		{
-			if (AxisValue != 0)
-			{
 				UE_LOG(LogMovement, Log, TEXT("Move right."));
 				FVector Movement = pawn->GetActorRightVector() * AxisValue;
 				if (pawn->ValidGridMovement(pawn->GetActorLocation(), Movement, pawn->MoveRight))
 					pawn->MovementComponent->Move(Movement, AxisValue, pawn->MoveRight);
-			}
 		}
 	}
 }

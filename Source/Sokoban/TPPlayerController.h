@@ -21,12 +21,15 @@ public:
 
 	void PlayerTick(float DeltaTime);
 
-	//Camera Rotation
+	//Camera
+	void UpdateCamera();
+
+	//Rotation
 	void MouseYaw(float AxisValue);
 
 	void MousePitch(float AxisValue);
 
-	//Camera Zoom
+	//Zoom
 	void MouseZoomIn();
 
 	void MouseZoomOut();

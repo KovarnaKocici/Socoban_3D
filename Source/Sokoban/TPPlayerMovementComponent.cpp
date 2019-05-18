@@ -70,7 +70,6 @@ void UTPPlayerMovementComponent::Move(FVector CurrMovement, float Axis, int Curr
 	AxisValue = Axis;
 	StartLocation = GetOwner()->GetActorLocation();
 	TargetLocation = GetOwner()->GetActorLocation() + CurrMovement;
-	//AddInputVector(Movement);
 	CurrAlpha = Alpha;
 	Direction = CurrDirection;
 }
